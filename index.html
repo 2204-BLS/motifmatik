@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" translate="no">
 <head>
     <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kilim Motifleri ile Dönüşüm Geometrisi</title>
     <!-- Tailwind CSS CDN -->
@@ -437,15 +438,14 @@
                 </h2>
                 <p class="text-xs text-rugCream opacity-80">
                     Yarışmaya başlamak için adınızı ve soyadınızı giriniz.<br>
-                    <strong class="text-rugGold">Her motif: 100 saniye • % doğruluk (0–100 puan) + %50 ve üzeri doğrulukta kalan süre (0–100 puan).</strong>
+                    <strong class="text-rugGold">Her motif: 100 saniye • Doğruluk + (%50 ve üzeriyse) kalan süre. Kolay x1, Orta x1,5, Zor x2; doğru motif bilgisi +10 puan.</strong>
                 </p>
             </div>
             <div class="bg-woodPanel p-3.5 rounded-xl border border-rugGold/50 text-left space-y-1.5">
                 <label for="playerNameInput" class="block text-xs font-bold text-rugGold flex items-center gap-1.5">
-                    <i class="fa-solid fa-user"></i> Yarışmacı Rumuzu:
+                    <i class="fa-solid fa-user"></i> Yarışmacı Adı ve Soyadı:
                 </label>
-                <input type="text" id="playerNameInput" placeholder="Örn: Ahmet_24" minlength="3" maxlength="16" pattern="[A-Za-z0-9_ÇĞİÖŞÜçğıöşü-]{3,16}" autocomplete="nickname" class="w-full px-3.5 py-2.5 bg-woodDark border border-rugGold/40 rounded-lg text-sm text-rugCream focus:outline-none focus:border-rugGold font-semibold">
-                <p class="text-[10px] text-rugCream/60">3–16 karakter; boşluk kullanmadan Türkçe harf, rakam, alt çizgi (_) veya tire (-) kullanabilirsiniz.</p>
+                <input type="text" id="playerNameInput" placeholder="Örn: Ahmet Yılmaz" class="w-full px-3.5 py-2.5 bg-woodDark border border-rugGold/40 rounded-lg text-sm text-rugCream focus:outline-none focus:border-rugGold font-semibold">
             </div>
             <div class="flex gap-2">
                 <button onclick="closeNameModal()" class="w-1/3 py-3 bg-gray-700 hover:bg-gray-600 font-bold text-white text-sm rounded-xl transition-all cursor-pointer">
@@ -473,9 +473,24 @@
         </div>
     </div>
 
+    <!-- Her motifin sonunda ad + anlam hatırlama sorusu -->
+    <div id="motifQuizModal" class="fixed inset-0 bg-black/95 backdrop-blur-md hidden items-center justify-center z-[85] p-3 md:p-6 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="motifQuizQuestion">
+      <div class="wood-card wood-border-frame w-full max-w-2xl p-5 md:p-7 my-auto space-y-4">
+        <div class="text-center space-y-1">
+          <div class="text-xs font-bold text-rugGold tracking-widest">KÜLTÜR BİLGİSİ • +10 PUAN</div>
+          <h2 id="motifQuizQuestion" class="font-serif text-xl md:text-2xl text-rugCream font-bold">Az önce dokuduğun motifin adı ve anlamı hangisidir?</h2>
+          <p class="text-xs text-rugCream/70">Her seçenekte motif adı ve taşıdığı mesaj birlikte verilmiştir. Tek cevap hakkın var.</p>
+        </div>
+        <div id="motifQuizOptions" class="grid grid-cols-1 gap-2" role="group" aria-label="Motif cevap seçenekleri"></div>
+        <div id="motifQuizFeedback" class="hidden text-sm font-semibold text-center p-3 rounded-lg border" aria-live="polite"></div>
+        <button id="motifQuizNext" onclick="advanceAfterQuiz()" disabled class="hidden w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-bold rounded-xl disabled:opacity-50">Sonraki Motife Geç</button>
+      </div>
+    </div>
+
     <div id="finalModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center z-50 p-4">
         <div class="wood-card wood-border-frame max-w-lg w-full p-6 rounded-2xl text-center space-y-4">
-            <h2 class="font-serif text-2xl font-bold text-rugGold">YARIŞMA TAMAMLANDI!</h2>
+            <h2 id="finalModalTitle" class="font-serif text-2xl font-bold text-rugGold">YARIŞMA TAMAMLANDI!</h2>
+            <p id="eliminationNotice" class="hidden text-sm font-semibold text-amber-300"></p>
             <div class="bg-woodDark/90 p-4 rounded-xl space-y-3 border border-rugGold/40 text-left">
                 <div class="flex justify-between"><span class="text-xs text-gray-300">Yarışmacı Adı:</span><span id="finalPlayerName" class="text-sm font-bold text-emerald-400">İsimsiz</span></div>
                 <div class="flex justify-between"><span class="text-xs text-gray-300">Ortalama Benzerlik:</span><span id="finalAvgAccuracy" class="text-sm font-mono font-bold text-rugGold">%0</span></div>
@@ -490,13 +505,17 @@
 
     <div id="leaderboardModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center z-50 p-4">
         <div class="wood-card wood-border-frame max-w-2xl w-full p-6 rounded-2xl text-center space-y-4">
-            <h2 class="font-serif text-2xl font-bold text-rugGold">LİDERLİK TABLOSU</h2>
+            <h2 class="font-serif text-2xl font-bold text-rugGold">🏆 EN YÜKSEK 10 PUAN</h2>
             <div class="overflow-y-auto max-h-72 border border-rugGold/30 rounded-xl bg-woodDark/80 p-2">
                 <table class="w-full text-xs text-left">
                     <tbody id="leaderboardTableBody"></tbody>
                 </table>
             </div>
-            <button onclick="closeLeaderboardModal()" class="px-5 py-2 bg-rugGold font-bold text-woodDark text-xs rounded-lg">Kapat</button>
+            <div class="flex flex-wrap justify-center gap-2">
+                <button onclick="exportLeaderboardCSV()" class="px-5 py-2 bg-emerald-800 border border-emerald-500 font-bold text-white text-xs rounded-lg">Tüm Kayıtları CSV Olarak Kaydet</button>
+                <button onclick="closeLeaderboardModal()" class="px-5 py-2 bg-rugGold font-bold text-woodDark text-xs rounded-lg">Kapat</button>
+            </div>
+            <p class="text-[10px] text-rugCream/65">Tüm yarışmacı sonuçları bu tarayıcıya kaydedilir. Burada yalnızca en yüksek 10 sonuç listelenir. Farklı bilgisayarlardaki kayıtlar otomatik birleşmez.</p>
         </div>
     </div>
 
@@ -907,6 +926,7 @@
         
         let historyStack = [];
         const CATEGORY_TIME_LIMIT = 100; // Her motifte en fazla 100 saniye
+        const MINIMUM_PASS_ACCURACY = 75; // Sonraki motife geçme barajı
         let timerSeconds = 0;
         let timerStartedAt = 0;
         let timerInterval = null;
@@ -917,6 +937,10 @@
         let completedMotifsAccuracy = [];
         let tournamentSaved = false;
         let currentMotifScored = false;
+        // Bilgi sorusu doğruysa her motif için yalnızca bir kez +10 puan.
+        let quizAnsweredMotifs = new Set();
+        let activeQuizMotifIndex = -1;
+        let activeQuizAnswered = false;
 
         window.onload = function() {
             loadSavedCustomDesigns();
@@ -1007,6 +1031,10 @@
                 alert("Kilim motifleri yarışmaya özeldir! Yarışmayı başlatmak için sağ üstteki 'YARIŞMAYA BAŞLA' butonuna tıklayın.");
                 return;
             }
+            // %75 barajı aşılmadan yarışmada motif atlanamaz.
+            // Yarışma sırasında sol listedeki motifler üzerinden atlama/yeniden başlatma kapalıdır.
+            alert("Yarışma motifleri sırayla oynanır. Sonraki motife geçmek için en az %75 doğruluk gerekir.");
+            return;
             // Her motif kendi görsel ve kültürel açıklamalı giriş sayfasını açar.
             const selectedMotif = ALL_MOTIFS[index];
             const categoryIndex = CATEGORIZED_MOTIFS.findIndex(
@@ -1396,13 +1424,7 @@
 
         function confirmInitialPlayerName() {
             const inputVal = document.getElementById('playerNameInput').value.trim();
-            const nicknamePattern = /^[A-Za-z0-9_ÇĞİÖŞÜçğıöşü-]{3,16}$/;
-            if (!nicknamePattern.test(inputVal)) {
-                alert("Lütfen 3–16 karakter uzunluğunda bir rumuz girin. Boşluk kullanmadan Türkçe harf, rakam, alt çizgi (_) veya tire (-) kullanabilirsiniz.");
-                document.getElementById('playerNameInput').focus();
-                return;
-            }
-            currentPayerName = inputVal;
+            currentPayerName = inputVal !== "" ? inputVal : "İsimsiz Yarışmacı";
             document.getElementById('playerDisplayName').innerText = currentPayerName;
             document.getElementById('initialNameModal').classList.add('hidden');
             
@@ -1411,6 +1433,9 @@
             currentMotifScored = false;
             totalScore = 0;
             completedMotifsAccuracy = [];
+            quizAnsweredMotifs = new Set();
+            activeQuizMotifIndex = -1;
+            activeQuizAnswered = false;
             document.getElementById('scoreText').innerText = "0";
             document.getElementById('startContestBtn').classList.remove('animate-bounce');
             document.getElementById('startContestBtn').innerHTML = `<i class="fa-solid fa-user-check"></i> ${currentPayerName}`;
@@ -1461,6 +1486,16 @@
             document.getElementById('moveCountText').innerText = '0';
         }
 
+        // Aktif motifin kayıtlı zorluk seviyesini esas alır.
+        function getMotifScoreMultiplier() {
+            const motif = ALL_MOTIFS[currentMotifIndex];
+            if (!motif) return 1;
+            const category = motif.categoryName || '';
+            if (category.includes('ZOR')) return 2;
+            if (category.includes('ORTA')) return 1.5;
+            return 1;
+        }
+
         function finishGame(timeExpired = false) {
             if (!isContestStarted) {
                 alert("Şu an Tanıtım Modundasınız. Puan kazanmak ve yarışmaya katılmak için lütfen 'YARIŞMAYA BAŞLA' butonuna tıklayın.");
@@ -1472,11 +1507,13 @@
             currentMotifScored = true;
             const accuracy = calculateAccuracy();
             // %1 = 1 puan, %100 = 100 puan. Desen dışı kare cezası accuracy'de uygulanır.
-            const accuracyScore = accuracy;
+            const multiplier = getMotifScoreMultiplier();
+            const accuracyScore = Math.round(accuracy * multiplier * 100) / 100;
             // Süre puanı yalnızca motif doğruluğu en az %50 olduğunda kazanılır.
-            // 1 sn = 99 puan, 90 sn = 10 puan, 100 sn = 0 puan.
-            const timeScore = accuracy >= 50 ? Math.max(0, CATEGORY_TIME_LIMIT - timerSeconds) : 0;
-            const totalLevelScore = accuracyScore + timeScore;
+            // Kolay: x1, Orta: x1.5, Zor: x2. Bilgi sorusu +10 değişmez.
+            const baseTimeScore = accuracy >= 50 ? Math.max(0, CATEGORY_TIME_LIMIT - timerSeconds) : 0;
+            const timeScore = baseTimeScore * multiplier;
+            const totalLevelScore = Math.round((accuracyScore + timeScore) * 100) / 100;
             totalScore += totalLevelScore;
             completedMotifsAccuracy.push(accuracy);
 
@@ -1487,13 +1524,107 @@
             document.getElementById('modalTime').innerText = formatTime(timerSeconds);
             document.getElementById('modalTimeBonus').innerText = accuracy < 50
                 ? '+0 Puan (%50 altı)' : `+${timeScore} Puan`;
-            document.getElementById('modalScore').innerText = `${totalLevelScore} / 200 Puan`;
+            document.getElementById('modalScore').innerText = `${totalLevelScore} / ${200 * multiplier} Puan (x${String(multiplier).replace('.', ',')})`;
+            if (accuracy < MINIMUM_PASS_ACCURACY) {
+                // Süre bittiğinde veya erken teslimde %75 altında kalan yarışma burada sona erer.
+                document.getElementById("resultModal").classList.add("hidden");
+                endEntireTournament();
+                document.getElementById("finalModalTitle").innerText = "YARIŞMA SONA ERDİ!";
+                const notice = document.getElementById("eliminationNotice");
+                notice.textContent = `Bu motifte doğruluk %${accuracy}. Devam etmek için en az %75 gerekliydi. Sonraki motife geçilemez.`;
+                notice.classList.remove("hidden");
+                isContestStarted = false;
+                return;
+            }
             document.getElementById('resultModal').classList.remove('hidden');
         }
 
         function closeModalAndNext() {
             document.getElementById('resultModal').classList.add('hidden');
-            const nextIdx = currentMotifIndex + 1;
+            if (currentMotifIndex < 0) return;
+            showMotifQuiz(currentMotifIndex);
+        }
+
+        function showMotifQuiz(index) {
+            if (index < 0 || index >= ALL_MOTIFS.length) return;
+            activeQuizMotifIndex = index;
+            activeQuizAnswered = quizAnsweredMotifs.has(ALL_MOTIFS[index].id);
+            const motif = ALL_MOTIFS[index];
+            const pool = ALL_MOTIFS.filter(item => item.id !== motif.id && item.name !== motif.name);
+            // Her motifte farklı üç yanlış seçenek seç; yinelenen doğru cevap olmasın.
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+            const choices = [motif, ...pool.slice(0, 3)];
+            for (let i = choices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [choices[i], choices[j]] = [choices[j], choices[i]];
+            }
+            const options = document.getElementById('motifQuizOptions');
+            options.replaceChildren();
+            choices.forEach((item, i) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'w-full text-left p-3 md:p-4 rounded-xl bg-woodDark border border-rugGold/40 hover:border-rugGold hover:bg-woodPanel transition-all text-sm';
+                const letter = document.createElement('span');
+                letter.className = 'text-rugGold font-bold mr-2';
+                letter.textContent = `${String.fromCharCode(65+i)})`;
+                const name = document.createElement('strong');
+                name.textContent = item.name + ' — ';
+                const explanation = document.createElement('span');
+                explanation.textContent = item.desc || 'Bu motifin geleneksel anlamı';
+                button.append(letter, name, explanation);
+                button.onclick = () => answerMotifQuiz(item.id);
+                options.appendChild(button);
+            });
+            const feedback = document.getElementById('motifQuizFeedback');
+            feedback.classList.add('hidden');
+            const next = document.getElementById('motifQuizNext');
+            next.textContent = index === ALL_MOTIFS.length - 1 ? 'Yarışmayı Bitir ve Puanı Kaydet' : 'Sonraki Motife Geç';
+            next.classList.add('hidden');
+            next.disabled = true;
+            const modal = document.getElementById('motifQuizModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function answerMotifQuiz(selectedId) {
+            if (activeQuizAnswered || activeQuizMotifIndex < 0) return;
+            const motif = ALL_MOTIFS[activeQuizMotifIndex];
+            activeQuizAnswered = true;
+            const correct = selectedId === motif.id;
+            // Soruyu tekrar gösterme veya çift tıklama ile ek puan kazanılması önlenir.
+            if (!quizAnsweredMotifs.has(motif.id)) {
+                quizAnsweredMotifs.add(motif.id);
+                if (correct) {
+                    totalScore += 10;
+                    document.getElementById('scoreText').innerText = totalScore;
+                }
+            }
+            document.querySelectorAll('#motifQuizOptions button').forEach(button => {
+                button.disabled = true;
+                button.classList.add('cursor-default');
+            });
+            const feedback = document.getElementById('motifQuizFeedback');
+            feedback.classList.remove('hidden');
+            feedback.className = 'text-sm font-semibold text-center p-3 rounded-lg border ' + (correct ?
+                'border-emerald-500 bg-emerald-900/40 text-emerald-200' :
+                'border-amber-500 bg-amber-950/60 text-amber-200');
+            feedback.textContent = correct ? 'Doğru cevap! +10 puan kazandın.' : `Yanlış cevap. Doğru yanıt: ${motif.name} — ${motif.desc || ''}. Ek puan kazanılmadı.`;
+            const next = document.getElementById('motifQuizNext');
+            next.disabled = false;
+            next.classList.remove('hidden');
+        }
+
+        function advanceAfterQuiz() {
+            if (!activeQuizAnswered) return;
+            const currentIndex = activeQuizMotifIndex;
+            activeQuizMotifIndex = -1;
+            const modal = document.getElementById('motifQuizModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            const nextIdx = currentIndex + 1;
             if (nextIdx >= ALL_MOTIFS.length) {
                 endEntireTournament();
                 return;
@@ -1511,35 +1642,34 @@
             }
         }
 
-        async function endEntireTournament() {
+        function endEntireTournament() {
             if (!isContestStarted) {
                 alert("Henüz yarışmaya başlamadınız.");
                 return;
             }
-            if (tournamentSaveInProgress) return;
             if (!currentMotifScored && currentMotifIndex >= 0) {
                 // Erken bitişte açık motifin puanını da genel skora dahil et.
                 stopTimer();
                 currentMotifScored = true;
                 const accuracy = calculateAccuracy();
+                const multiplier = getMotifScoreMultiplier();
                 const timeScore = accuracy >= 50 ? Math.max(0, CATEGORY_TIME_LIMIT - timerSeconds) : 0;
-                totalScore += accuracy + timeScore;
+                totalScore += Math.round((accuracy + timeScore) * multiplier * 100) / 100;
                 completedMotifsAccuracy.push(accuracy);
                 document.getElementById('scoreText').innerText = totalScore;
                 document.getElementById('resultModal').classList.add('hidden');
             }
             stopTimer();
-            const savedToFirebase = await saveTournamentScore();
+            saveTournamentScore();
             const completedCount = completedMotifsAccuracy.length;
             let avgAccuracy = completedCount > 0 ? Math.round(completedMotifsAccuracy.reduce((a, b) => a + b, 0) / completedCount) : 0;
 
+            document.getElementById("finalModalTitle").innerText = "YARIŞMA TAMAMLANDI!";
+            document.getElementById("eliminationNotice").classList.add("hidden");
             document.getElementById('finalPlayerName').innerText = currentPayerName;
             document.getElementById('finalAvgAccuracy').innerText = `%${avgAccuracy}`;
             document.getElementById('finalTotalScore').innerText = totalScore;
             document.getElementById('finalModal').classList.remove('hidden');
-            if (!savedToFirebase) {
-                alert("Puanınız hesaplandı ancak ortak liderlik tablosuna kaydedilemedi. İnternet bağlantısını kontrol edip 'YARIŞMAYI BİTİR & KAYDET' düğmesine yeniden basabilirsiniz.");
-            }
         }
 
         function returnToHome() {
@@ -1547,6 +1677,9 @@
             isContestStarted = false;
             totalScore = 0;
             completedMotifsAccuracy = [];
+            quizAnsweredMotifs = new Set();
+            activeQuizMotifIndex = -1;
+            activeQuizAnswered = false;
             tournamentSaved = false;
             currentMotifScored = false;
             currentPayerName = "";
@@ -1557,112 +1690,145 @@
             startBtn.innerHTML = '<i class="fa-solid fa-play"></i> YARIŞMAYA BAŞLA';
             startBtn.classList.add('animate-bounce');
             document.getElementById('finalModal').classList.add('hidden');
+            document.getElementById('motifQuizModal').classList.add('hidden');
+            document.getElementById('motifQuizModal').classList.remove('flex');
             document.getElementById('categoryIntroModal').classList.add('hidden');
             document.getElementById('categoryIntroModal').classList.remove('flex');
             loadIntroMode();
             window.scrollTo(0, 0);
         }
 
-        // Yarışma puanları ortak Firebase veritabanında tutulur.
-        let tournamentSaveInProgress = false;
+        // Yarışmacı sonuçları aynı tarayıcıda, bu HTML dosyası için kalıcı olarak saklanır.
+        const LEADERBOARD_STORAGE_KEY = 'kilim_leaderboard_v1';
+        let sessionLeaderboard = [];
+        let leaderboardStorageWarning = false;
 
-        async function saveTournamentScore() {
-            if (tournamentSaved || !isContestStarted) return tournamentSaved;
-            if (tournamentSaveInProgress) return false;
-            tournamentSaveInProgress = true;
-            const nickname = (currentPayerName || '').trim();
-            const score = Math.round(totalScore);
+        function readLeaderboard() {
             try {
-                if (!window.motifMatikFirebase) throw new Error('Firebase bağlantısı henüz hazır değil.');
-                await window.motifMatikFirebase.saveScore({ nickname, score });
-                tournamentSaved = true;
-                return true;
+                const data = JSON.parse(localStorage.getItem(LEADERBOARD_STORAGE_KEY) || '[]');
+                return Array.isArray(data) ? data.filter(item => item && typeof item.name === 'string' && Number.isFinite(Number(item.score))) : [];
             } catch (error) {
-                console.error('Firebase puan kaydı başarısız:', error);
-                return false;
-            } finally {
-                tournamentSaveInProgress = false;
+                leaderboardStorageWarning = true;
+                return sessionLeaderboard;
             }
         }
 
-        async function renderLeaderboard() {
+        function saveTournamentScore() {
+            if (tournamentSaved || !isContestStarted) return;
+            const name = (currentPayerName || '').trim() || 'İsimsiz Yarışmacı';
+            const count = completedMotifsAccuracy.length;
+            const average = count ? Math.round(completedMotifsAccuracy.reduce((a, b) => a + b, 0) / count) : 0;
+            const entry = {
+                id: Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 9),
+                name: name,
+                score: Math.round(totalScore),
+                accuracy: average,
+                completed: count,
+                date: new Date().toISOString()
+            };
+            const scores = readLeaderboard();
+            scores.push(entry);
+            sessionLeaderboard = scores;
+            try {
+                localStorage.setItem(LEADERBOARD_STORAGE_KEY, JSON.stringify(scores));
+                leaderboardStorageWarning = false;
+            } catch (error) {
+                leaderboardStorageWarning = true;
+            }
+            tournamentSaved = true;
+        }
+
+        function renderLeaderboard() {
             const tbody = document.getElementById('leaderboardTableBody');
             tbody.replaceChildren();
-            const loadingRow = document.createElement('tr');
-            const loadingCell = document.createElement('td');
-            loadingCell.colSpan = 4;
-            loadingCell.className = 'p-5 text-center text-rugCream/70';
-            loadingCell.textContent = 'Ortak puan tablosu yükleniyor...';
-            loadingRow.appendChild(loadingCell);
-            tbody.appendChild(loadingRow);
-
-            try {
-                if (!window.motifMatikFirebase) throw new Error('Firebase bağlantısı hazır değil.');
-                const scores = await window.motifMatikFirebase.getTopScores();
-                tbody.replaceChildren();
-                if (!scores.length) {
-                    const tr = document.createElement('tr');
-                    const td = document.createElement('td');
-                    td.colSpan = 4;
-                    td.className = 'p-5 text-center text-rugCream/70';
-                    td.textContent = 'Henüz kaydedilmiş yarışma sonucu yok.';
-                    tr.appendChild(td);
-                    tbody.appendChild(tr);
-                    return;
-                }
-
-                const header = document.createElement('tr');
-                header.className = 'text-rugGold border-b border-rugGold/40';
-                for (const title of ['Sıra', 'Rumuz', 'Puan', 'Tarih']) {
-                    const th = document.createElement('th');
-                    th.className = 'p-2 whitespace-nowrap';
-                    th.textContent = title;
-                    header.appendChild(th);
-                }
-                tbody.appendChild(header);
-
-                scores.forEach((entry, i) => {
-                    const tr = document.createElement('tr');
-                    tr.className = 'border-b border-rugGold/20 ' + (i < 3 ? 'text-amber-300' : 'text-rugCream');
-                    const date = entry.createdAt instanceof Date ? entry.createdAt : null;
-                    const values = [String(i + 1), entry.nickname, String(entry.score), date ? date.toLocaleDateString('tr-TR') : '-'];
-                    values.forEach((value, j) => {
-                        const td = document.createElement('td');
-                        td.className = 'p-2 ' + (j === 2 ? 'font-bold text-yellow-300' : '');
-                        td.textContent = value;
-                        tr.appendChild(td);
-                    });
-                    tbody.appendChild(tr);
-                });
-            } catch (error) {
-                console.error('Ortak liderlik tablosu yüklenemedi:', error);
-                tbody.replaceChildren();
+            const scores = readLeaderboard().slice().sort((a, b) => Number(b.score) - Number(a.score) || Number(b.accuracy || 0) - Number(a.accuracy || 0) || String(a.date || '').localeCompare(String(b.date || ''))).slice(0, 10);
+            if (!scores.length) {
                 const tr = document.createElement('tr');
                 const td = document.createElement('td');
-                td.colSpan = 4;
-                td.className = 'p-5 text-center text-amber-300';
-                td.textContent = 'Ortak puan tablosuna ulaşılamadı. İnternet bağlantısını ve Firebase ayarlarını kontrol edin.';
+                td.className = 'p-5 text-center text-rugCream/70';
+                td.textContent = 'Henüz kaydedilmiş yarışma sonucu yok.';
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+                return;
+            }
+            const header = document.createElement('tr');
+            header.className = 'text-rugGold border-b border-rugGold/40';
+            for (const title of ['Sıra', 'Yarışmacı', 'Puan', 'Benzerlik', 'Tarih']) {
+                const th = document.createElement('th');
+                th.className = 'p-2 whitespace-nowrap';
+                th.textContent = title;
+                header.appendChild(th);
+            }
+            tbody.appendChild(header);
+            scores.forEach((entry, i) => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-rugGold/20 ' + (i < 3 ? 'text-amber-300' : 'text-rugCream');
+                const date = new Date(entry.date);
+                const values = [String(i + 1), entry.name, String(entry.score), '%' + (entry.accuracy ?? 0), Number.isNaN(date.getTime()) ? '-' : date.toLocaleDateString('tr-TR')];
+                values.forEach((value, j) => {
+                    const td = document.createElement('td');
+                    td.className = 'p-2 ' + (j === 2 ? 'font-bold text-yellow-300' : '');
+                    td.textContent = value;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            if (leaderboardStorageWarning) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 5;
+                td.className = 'p-3 text-amber-300';
+                td.textContent = 'Tarayıcı kayıt izni vermiyor. Sonuçlar yalnızca bu sayfa açıkken korunabilir.';
                 tr.appendChild(td);
                 tbody.appendChild(tr);
             }
+        }
+
+        // Yarışma sonuçlarını okullar arasında birleştirebilmek için tüm kayıtları dışa aktar.
+        function exportLeaderboardCSV() {
+            const scores = readLeaderboard().slice().sort((a, b) => Number(b.score) - Number(a.score) || Number(b.accuracy || 0) - Number(a.accuracy || 0));
+            if (!scores.length) {
+                alert('Dışa aktarılacak kayıt bulunamadı.');
+                return;
+            }
+            const quote = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
+            const rows = [['Sıra', 'Öğrenci', 'Toplam Puan', 'Ortalama Benzerlik', 'Tamamlanan Motif', 'Tarih']];
+            scores.forEach((entry, index) => rows.push([
+                index + 1, entry.name, entry.score, entry.accuracy ?? 0,
+                entry.completed ?? 0, entry.date ?? ''
+            ]));
+            const csv = '\uFEFF' + rows.map(row => row.map(quote).join(';')).join('\r\n');
+            const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'kilim_yarisma_puanlari_' + new Date().toISOString().slice(0, 10) + '.csv';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         function restartTournament() {
             stopTimer();
             totalScore = 0;
             completedMotifsAccuracy = [];
+            quizAnsweredMotifs = new Set();
+            activeQuizMotifIndex = -1;
+            activeQuizAnswered = false;
             tournamentSaved = false;
             currentMotifScored = false;
             isContestStarted = false;
             document.getElementById('scoreText').innerText = '0';
             document.getElementById('finalModal').classList.add('hidden');
+            document.getElementById('motifQuizModal').classList.add('hidden');
+            document.getElementById('motifQuizModal').classList.remove('flex');
             document.getElementById('playerNameInput').value = '';
             openNameModal();
         }
 
         function openLeaderboardModal() {
-            document.getElementById('leaderboardModal').classList.remove('hidden');
             renderLeaderboard();
+            document.getElementById('leaderboardModal').classList.remove('hidden');
         }
         function closeLeaderboardModal() { document.getElementById('leaderboardModal').classList.add('hidden'); }
 
@@ -1752,72 +1918,5 @@
             alert("Çizim matris kodu kopyalandı!");
         }
     </script>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAIRutxxQzxrAQKwDh0tg7_VDLoJ-zzGr4",
-            authDomain: "motifmatik-2204b.firebaseapp.com",
-            projectId: "motifmatik-2204b",
-            storageBucket: "motifmatik-2204b.firebasestorage.app",
-            messagingSenderId: "16757083538",
-            appId: "1:16757083538:web:ad676e67d2203b4a4f454b",
-            measurementId: "G-P152ZGXME4"
-        };
-
-        const firebaseApp = initializeApp(firebaseConfig);
-        const db = getFirestore(firebaseApp);
-        const auth = getAuth(firebaseApp);
-
-        // Anonim oturum, Firestore kurallarındaki request.auth != null şartını karşılar.
-        const authReady = new Promise((resolve, reject) => {
-            const unsubscribe = onAuthStateChanged(auth, async (user) => {
-                unsubscribe();
-                if (user) {
-                    resolve(user);
-                    return;
-                }
-                try {
-                    const credential = await signInAnonymously(auth);
-                    resolve(credential.user);
-                } catch (error) {
-                    reject(error);
-                }
-            }, reject);
-        });
-
-        window.motifMatikFirebase = {
-            async saveScore({ nickname, score }) {
-                await authReady;
-                const validNickname = /^[A-Za-z0-9_ÇĞİÖŞÜçğıöşü-]{3,16}$/;
-                if (!validNickname.test(nickname)) throw new Error('Geçersiz rumuz.');
-                if (!Number.isInteger(score) || score < 0 || score > 10000) throw new Error('Geçersiz puan.');
-
-                // Güvenlik kurallarıyla uyumlu olarak yalnızca bu üç alan gönderilir.
-                await addDoc(collection(db, "scores"), {
-                    nickname,
-                    score,
-                    createdAt: serverTimestamp()
-                });
-            },
-
-            async getTopScores() {
-                const scoresQuery = query(collection(db, "scores"), orderBy("score", "desc"), limit(10));
-                const snapshot = await getDocs(scoresQuery);
-                return snapshot.docs.map((scoreDoc) => {
-                    const data = scoreDoc.data();
-                    return {
-                        nickname: data.nickname || 'Rumuzsuz',
-                        score: Number(data.score) || 0,
-                        createdAt: data.createdAt && typeof data.createdAt.toDate === 'function' ? data.createdAt.toDate() : null
-                    };
-                });
-            }
-        };
-    </script>
-
 </body>
 </html>
